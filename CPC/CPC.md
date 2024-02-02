@@ -134,3 +134,26 @@ $$
 如Figure1所示
 
 ![](Figure1.png)
+
+### 叁：InfoNCE Loss和交互信息估计（mutual information estimation）
+
+编码器和自回归模型都被训练去一起优化一个基于NCE的的损失，在这里作者将其称作InfoNCE，需要被优化的损失如下
+
+$$
+\mathcal{L}_\mathrm{N}=-\mathop{\mathbb{E}}\limits_{X}\bigg[\mathrm{log}\frac{f_k(x_{t+k},c_t)}{\sum_{x_j\in X}f_k(x_j,c_t)}\bigg]\tag{4}
+
+$$
+
+其中，$X=\{x_1,...x_N\}$是$N$个随机采样，这些采样中包含来自于$p(x_{t+k}|c_t)$的一个正样本和来自于所给出的分布（“‘proposal’distribution”）$p(x_{t+k})$中的$N-1$个负样本
+
+下面，作者解释了为什么优化这个损失可以使得我们可以用$f_k(x_{t+k},c_t)$来估计equation 2中的密度比例，解释的过程主要依赖于下面这个方程
+
+$$
+\begin{aligned}
+p(d=i|X,c_t) &= \frac{p(x_i|c_t)\prod_{l\neq i}{p(x_l)}}{\sum_{j=1}^Np(x_j|c_t)\prod_{l\neq j}p(x_l)} \\
+&= \frac{\frac{p(x_i|c_t)}{p(x_i)}}{\sum^N_{j=1}\frac{p(x_j|c_t)}{p(x_j)}}\tag{5}
+\end{aligned}
+
+$$
+
+作者认为，在equation 4中的损失是一个类别交叉熵（categorical cross-entropy），这个交叉熵损失是关于正确分类正样本的，其中$\frac{f_k}{\sum_Xf_k}$是模型的预测，下面用$p(d=i|X,c_t)$表示这个损失的最优概率（“the optimal probability”），其中$[d=i]$表示样本$x_i$是’正‘采样（'positive' sample），这样，上面的公式表示的就是采样$x_i$从条件分布$p(x_{t+k}|c_t)$而不是给出的分布$p(x_{t+k})$采到的概率
