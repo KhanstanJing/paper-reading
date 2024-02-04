@@ -136,14 +136,10 @@ width和height是相对于整个图像的预测值
 
 ### 贰：训练
 
-卷积层在ImageNet1000-class竞赛集上进行了预训练，预训练用了Figure3中的前20个卷积层，后面跟着一个平均池化层和一个全连接层
-
-原文为“For pretraining we use the first 20 convolutional layers from Figure 3 followed by a average-pooling layer and a fully connected layer.connected layer.”
-
-这里首先**没明白为什么只用前20个卷积层**，前20层的话就是到第5个块的上面的×2的两层，其次没明白说的跟着一个平均池化层和一个全连接层是什么意思，全连接层肯定是接在最后面的，但是平均池化层是每个卷积层后面接了一个还是一共只接了一个没太明白，而且为什么这里用的是**平均池化也没明白**，因为图中用的是最大池化。总得来说**不太明白为什么可以在这种架构下进行预训练**
+卷积层在ImageNet1000-class竞赛集上进行了预训练，预训练用了Figure3中的前20个卷积层，后面跟着一个平均池化层和一个全连接层，原文为“For pretraining we use the first 20 convolutional layers from Figure 3 followed by a average-pooling layer and a fully connected layer.connected layer.”，这里首先**没明白为什么只用前20个卷积层**，前20层的话就是到第5个块的上面的×2的两层，其次没明白说的跟着一个平均池化层和一个全连接层是什么意思，全连接层肯定是接在最后面的，但是平均池化层是每个卷积层后面接了一个还是一共只接了一个没太明白，而且为什么这里用的是**平均池化也没明白**，因为图中用的是最大池化。总得来说**不太明白为什么可以在这种架构下进行预训练**
 
 作者说这个网络大概训练了一周，在ImageNet 2012 验证集上达到了single crop top-5 accuracy of 88%，作者说他用了一个Darknet framework进行所有的训练和推理，更不明白了
 
-但是下一段作者进行了解释，看起来应该是他们事先用的是上面说到的20个卷积层去训练的，而后根据[29]论文的观点，增加卷积层和全连接层可以提高表现，所以添加了4个卷积层和2个全连接层，全是随机初始化的权重，这里说的是“we add four convolutional layers and two fully connected layers with randomly initialized weights.”意思额外增加了两个全连接层，那好像应该是3个
-
-另外他们也没解释平均池化变成了最大池化的事情，猜想可能是最大池化就是表现得好所以没解释，但是平均池化训练出来的参数能不能放大最大池化中用也没有说
+但是下一段作者进行了解释，看起来应该是他们事先用的是上面说到的20个卷积层去训练的，而后根据[29]论文的观点，增加卷积层和全连接层可以提高表现，所以添加了4个卷积层和2个全连接层，全是随机初始化的权重，这里说的是“we add four convolutionallay-
+ers and two fully connected layers with randomly initialized
+weights.”
