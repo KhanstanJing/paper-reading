@@ -105,14 +105,45 @@ $$
 
 如果胞中没有目标存在，那么置信分数就是应该是0，否则的话我们希望置信分数等于预测框和真实值的交并比（交叠比，intersection over union，IOU）
 
-每个网格胞还预测$C$个条件类别概率（conditional class probabilities）$\mathrm{Pr(Class_i|Object)}$，这些概率在包含了一个目标的网格胞
+每个网格胞还预测$C$个条件类别概率（conditional class probabilities）$\mathrm{Pr(Class_i|Object)}$，这些概率在包含了一个目标的网格胞中是有条件的（？没看懂，原文是“These probabilities are conditioned on the grid cell containing an object.”也可能是“这些是在包含一个目标的网格胞上的条件概率”）
+
+每个网格胞上作者只预测一个类别概率集，不管框$B$的数量有多少
+
+并且我们可以有
+
+$$
+\mathrm{Pr(Class_i|Object)*Pr(Object)*IOU^{truth}_{pred}}=\mathrm{Pr(Class_i)*IOU^{truth}_{pred}}\tag{1}
+
+$$
+
+这个公式给了我们每个框精确到类别的置信分数
+
+这些分数同时编码了框中出现的类别的概率和预测框有多好地符合目标
 
 #### 三、边界框预测
 
-每个边界框（不过这里目前还没说是预测框还是真实框）包含以下5个预测值：$x,y,w,h$和置信，其中
+每个边界框（不过这里目前还没说是预测框还是真实框，感觉上来说应该是之前提到的每个网格胞中预测的$B$个预测框）包含以下5个预测值：$x,y,w,h$和置信，其中
 
 $(x,y)$坐标代表的是框的中心相对于网格胞的边界
 
 width和height是相对于整个图像的预测值
 
 置信预测代表了预测框和任何真实框之间的IOU
+
+### 壹：网络设计
+
+![](Figure3.png)
+
+### 贰：训练
+
+卷积层在ImageNet1000-class竞赛集上进行了预训练，预训练用了Figure3中的前20个卷积层，后面跟着一个平均池化层和一个全连接层
+
+原文为“For pretraining we use the first 20 convolutional layers from Figure 3 followed by a average-pooling layer and a fully connected layer.connected layer.”
+
+这里首先**没明白为什么只用前20个卷积层**，前20层的话就是到第5个块的上面的×2的两层，其次没明白说的跟着一个平均池化层和一个全连接层是什么意思，全连接层肯定是接在最后面的，但是平均池化层是每个卷积层后面接了一个还是一共只接了一个没太明白，而且为什么这里用的是**平均池化也没明白**，因为图中用的是最大池化。总得来说**不太明白为什么可以在这种架构下进行预训练**
+
+作者说这个网络大概训练了一周，在ImageNet 2012 验证集上达到了single crop top-5 accuracy of 88%，作者说他用了一个Darknet framework进行所有的训练和推理，更不明白了
+
+但是下一段作者进行了解释，看起来应该是他们事先用的是上面说到的20个卷积层去训练的，而后根据[29]论文的观点，增加卷积层和全连接层可以提高表现，所以添加了4个卷积层和2个全连接层，全是随机初始化的权重，这里说的是“we add four convolutional layers and two fully connected layers with randomly initialized weights.”意思额外增加了两个全连接层，那好像应该是3个
+
+另外他们也没解释平均池化变成了最大池化的事情，猜想可能是最大池化就是表现得好所以没解释，但是平均池化训练出来的参数能不能放大最大池化中用也没有说
